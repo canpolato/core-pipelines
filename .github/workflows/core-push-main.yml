@@ -63,7 +63,14 @@ jobs:
           message: CD Change by Pipeline
           commitChange: true
           updateFile: true
-      
-      
-      
-      
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Retag image as PT
+        run: |
+          docker pull canpolatoral/${{ github.event.repository.name }}:${{ env.PR_LATEST_COMMIT }}
+          docker tag canpolatoral/${{ github.event.repository.name }}:${{ env.PR_LATEST_COMMIT }} canpolatoral/${{ github.event.repository.name }}:prod
+          docker push canpolatoral/${{ github.event.repository.name }}:prod
