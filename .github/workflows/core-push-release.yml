@@ -107,7 +107,7 @@ jobs:
 
   cte-deployment:
     runs-on: ubuntu-latest
-    needs: sit-deployment
+    needs: uat-deployment
     environment: cte
     steps:
       - name: Checkout
