@@ -17,17 +17,17 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Show GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
-      - name: "Latest Commit Id"
-        run: echo ${{ github.sha }}
+      # - name: Show GitHub context
+      #   env:
+      #     GITHUB_CONTEXT: ${{ toJson(github) }}
+      #   run: echo "$GITHUB_CONTEXT"
+      # - name: "Latest Commit Id"
+      #   run: echo ${{ github.sha }}
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
           push: true
-          tags: canpolatoral/${{ github.event.repository.name }}:${{ github.run_number }}, canpolatoral/${{ github.event.repository.name }}:${{ github.sha }}, canpolatoral/${{ github.event.repository.name }}:latest
+          tags: canpolatoral/${{ github.event.repository.name }}:release-${{ github.run_number }}, canpolatoral/${{ github.event.repository.name }}:release-${{ github.sha }}, canpolatoral/${{ github.event.repository.name }}:release-latest
 
   sit-deployment:
     runs-on: ubuntu-latest
@@ -40,14 +40,6 @@ jobs:
           repository: ${{ github.repository }}-config
           ref: refs/heads/main
           path: './${{ github.event.repository.name }}-config'
-
-      - name: Show GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
-      - name: "Latest Commit Id"
-        run: echo ${{ github.sha }}
-
       - name: Update values-sit.yaml
         uses: fjogeleit/yaml-update-action@main
         with:
@@ -55,7 +47,7 @@ jobs:
           workDir: '${{ github.event.repository.name }}-config'
           valueFile: 'helm-charts/${{ github.event.repository.name }}/values-sit.yaml'
           propertyPath: 'image.tag'
-          value: ${{ github.sha }}
+          value: release-${{ github.sha }}
           branch: main
           masterBranchName: main
           targetBranch: main
@@ -86,14 +78,6 @@ jobs:
           repository: ${{ github.repository }}-config
           ref: refs/heads/main
           path: './${{ github.event.repository.name }}-config'
-
-      - name: Show GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
-      - name: "Latest Commit Id"
-        run: echo ${{ github.sha }}
-
       - name: Update values-sit.yaml
         uses: fjogeleit/yaml-update-action@main
         with:
@@ -101,7 +85,45 @@ jobs:
           workDir: '${{ github.event.repository.name }}-config'
           valueFile: 'helm-charts/${{ github.event.repository.name }}/values-uat.yaml'
           propertyPath: 'image.tag'
-          value: ${{ github.sha }}
+          value: release-${{ github.sha }}
+          branch: main
+          masterBranchName: main
+          targetBranch: main
+          token: ${{ secrets.CONFIG_PAT }}
+          message: CD Change by Pipeline
+          commitChange: true
+          updateFile: true
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Retag image as UAT
+        run: |
+          docker pull canpolatoral/${{ github.event.repository.name }}:${{ github.run_number }}
+          docker tag canpolatoral/${{ github.event.repository.name }}:${{ github.run_number }} canpolatoral/${{ github.event.repository.name }}:uat
+          docker push canpolatoral/${{ github.event.repository.name }}:uat
+
+  cte-deployment:
+    runs-on: ubuntu-latest
+    needs: sit-deployment
+    environment: cte
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+        with:
+          repository: ${{ github.repository }}-config
+          ref: refs/heads/main
+          path: './${{ github.event.repository.name }}-config'
+      - name: Update values-sit.yaml
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          repository: ${{ github.repository }}-config
+          workDir: '${{ github.event.repository.name }}-config'
+          valueFile: 'helm-charts/${{ github.event.repository.name }}/values-cte.yaml'
+          propertyPath: 'image.tag'
+          value: release-${{ github.sha }}
           branch: main
           masterBranchName: main
           targetBranch: main
@@ -121,11 +143,10 @@ jobs:
           docker tag canpolatoral/${{ github.event.repository.name }}:${{ github.run_number }} canpolatoral/${{ github.event.repository.name }}:uat
           docker push canpolatoral/${{ github.event.repository.name }}:uat
       
-      
-  pt-deployment:
+  stg-deployment:
     runs-on: ubuntu-latest
-    needs: uat-deployment
-    environment: pt
+    needs: cte-deployment
+    environment: stg
     steps:
       - name: Checkout
         uses: actions/checkout@master
@@ -133,22 +154,14 @@ jobs:
           repository: ${{ github.repository }}-config
           ref: refs/heads/main
           path: './${{ github.event.repository.name }}-config'
-
-      - name: Show GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
-      - name: "Latest Commit Id"
-        run: echo ${{ github.sha }}
-
       - name: Update values-sit.yaml
         uses: fjogeleit/yaml-update-action@main
         with:
           repository: ${{ github.repository }}-config
           workDir: '${{ github.event.repository.name }}-config'
-          valueFile: 'helm-charts/${{ github.event.repository.name }}/values-pt.yaml'
+          valueFile: 'helm-charts/${{ github.event.repository.name }}/values-stg.yaml'
           propertyPath: 'image.tag'
-          value: ${{ github.sha }}
+          value: release-${{ github.sha }}
           branch: main
           masterBranchName: main
           targetBranch: main

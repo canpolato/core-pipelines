@@ -40,14 +40,6 @@ jobs:
           repository: ${{ github.repository }}-config
           ref: refs/heads/main
           path: './${{ github.event.repository.name }}-config'
-
-      - name: Show GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
-      - name: "Latest Commit Id"
-        run: echo ${{ env.PR_LATEST_COMMIT }}
-
       - name: Update values-prod.yaml
         uses: fjogeleit/yaml-update-action@main
         with:

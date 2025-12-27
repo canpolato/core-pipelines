@@ -31,14 +31,10 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Show GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
-      - name: "Latest Commit Id"
-        run: echo ${{ github.event.pull_request.head.sha }}
+      # - name: "Latest Commit Id"
+      #   run: echo ${{ github.event.pull_request.head.sha }}
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
-          push: true
-          tags: canpolatoral/${{ github.event.repository.name }}:${{ github.run_number }}, canpolatoral/${{ github.event.repository.name }}:${{ github.event.pull_request.head.sha }}, canpolatoral/${{ github.event.repository.name }}:latest
+          push: false
+          # tags: canpolatoral/${{ github.event.repository.name }}:${{ github.run_number }}, canpolatoral/${{ github.event.repository.name }}:${{ github.event.pull_request.head.sha }}, canpolatoral/${{ github.event.repository.name }}:latest
