@@ -8,7 +8,7 @@ on:
 
 jobs:
 
-  branch-and-pr-check:
+  branch-check:
     runs-on: ubuntu-latest
     steps:
       - run: |
@@ -20,15 +20,28 @@ jobs:
             exit 1
           fi
         shell: bash
-      - run: |
-          if [[ ${{ github.event.pull_request.merged }} = true ]]
-          then
-            echo "Merge completed"
-          else
-            echo "Merge is not completed"
-            exit 1
-          fi
-        shell: bash
+
+  # branch-and-pr-check:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - run: |
+  #         if [[ ${{ github.head_ref }} = feature*  ]] || [[ ${{ github.head_ref }} = hotfix* ]]
+  #         then
+  #           echo "${{ github.head_ref }} branch is allowed"
+  #         else
+  #           echo "${{ github.head_ref }} branch is not allowed"
+  #           exit 1
+  #         fi
+  #       shell: bash
+  #     - run: |
+  #         if [[ ${{ github.event.pull_request.merged }} = true ]]
+  #         then
+  #           echo "Merge completed"
+  #         else
+  #           echo "Merge is not completed"
+  #           exit 1
+  #         fi
+  #       shell: bash
 
   docker-image-build:
     needs: branch-check
@@ -64,7 +77,7 @@ jobs:
   #         docker push canpolatoral/${{ github.event.repository.name }}:dev
 
   dev-deployment:
-    needs: retag-image
+    needs: branch-check
     runs-on: ubuntu-latest
     environment: dev
     steps:
