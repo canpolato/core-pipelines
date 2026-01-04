@@ -93,6 +93,11 @@ jobs:
           repository: ${{ github.repository }}-config
           ref: refs/heads/main
           path: './${{ github.event.repository.name }}-config'
+
+      - name: Show GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
       - name: Update values-dev.yaml
         uses: fjogeleit/yaml-update-action@main
         with:
@@ -107,4 +112,3 @@ jobs:
           token: ${{ secrets.CONFIG_PAT }}
           message: CD Change by Pipeline
           commitChange: true
-          updateFile: true
