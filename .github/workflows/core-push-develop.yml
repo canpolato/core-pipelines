@@ -67,12 +67,11 @@ jobs:
     runs-on: ubuntu-latest
     environment: dev
     steps:
-      # - name: Checkout
-      #   uses: actions/checkout@master
-      #   with:
-      #     repository: ${{ github.repository }}-config
-      #     ref: refs/heads/develop
-      # #     path: './${{ github.event.repository.name }}-config'
+      - name: Checkout
+        uses: actions/checkout@master
+        with:
+          repository: ${{ github.repository }}-config
+          ref: refs/heads/develop
       - name: Update values-dev.yaml
         uses: fjogeleit/yaml-update-action@main
         with:
@@ -81,9 +80,7 @@ jobs:
           valueFile: 'helm-charts/${{ github.event.repository.name }}/values-dev.yaml'
           propertyPath: 'image.tag'
           value: develop-${{ github.sha }}
-          masterBranchName: main
-          targetBranch: develop
-          branch: develop
+          masterBranchName: develop
           token: ${{ secrets.CONFIG_PAT }}
           message: CD Change by Pipeline
           commitChange: true
