@@ -81,8 +81,7 @@ jobs:
           valueFile: 'helm-charts/${{ github.event.repository.name }}/values-dev.yaml'
           propertyPath: 'image.tag'
           value: develop-${{ github.sha }}
-          branch: develop
+          masterBranchName: develop
           token: ${{ secrets.CONFIG_PAT }}
           message: CD Change by Pipeline
           commitChange: true
-          updateFile: true
