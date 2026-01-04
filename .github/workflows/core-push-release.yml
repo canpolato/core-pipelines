@@ -35,7 +35,7 @@ jobs:
     environment: sit
     steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@develop
         with:
           repository: ${{ github.repository }}-config
           ref: refs/heads/main
@@ -73,7 +73,7 @@ jobs:
     environment: uat
     steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@develop
         with:
           repository: ${{ github.repository }}-config
           ref: refs/heads/main
@@ -111,7 +111,7 @@ jobs:
     environment: cte
     steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@develop
         with:
           repository: ${{ github.repository }}-config
           ref: refs/heads/main
@@ -149,7 +149,7 @@ jobs:
     environment: stg
     steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@staging
         with:
           repository: ${{ github.repository }}-config
           ref: refs/heads/main
