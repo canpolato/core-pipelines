@@ -67,17 +67,12 @@ jobs:
     runs-on: ubuntu-latest
     environment: dev
     steps:
-      - name: Checkout
-        uses: actions/checkout@master
-        with:
-          repository: ${{ github.repository }}-config
-          ref: refs/heads/develop
-          path: './${{ github.event.repository.name }}-config'
-
-      - name: Show GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
+      # - name: Checkout
+      #   uses: actions/checkout@master
+      #   with:
+      #     repository: ${{ github.repository }}-config
+      #     ref: refs/heads/develop
+      # #     path: './${{ github.event.repository.name }}-config'
       - name: Update values-dev.yaml
         uses: fjogeleit/yaml-update-action@main
         with:
@@ -86,9 +81,7 @@ jobs:
           valueFile: 'helm-charts/${{ github.event.repository.name }}/values-dev.yaml'
           propertyPath: 'image.tag'
           value: develop-${{ github.sha }}
-          branch: main
-          masterBranchName: main
-          targetBranch: main
+          branch: develop
           token: ${{ secrets.CONFIG_PAT }}
           message: CD Change by Pipeline
           commitChange: true
