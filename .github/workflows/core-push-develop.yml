@@ -82,6 +82,8 @@ jobs:
           propertyPath: 'image.tag'
           value: develop-${{ github.sha }}
           masterBranchName: develop
+          targetBranch: develop
+          branch: develop
           token: ${{ secrets.CONFIG_PAT }}
           message: CD Change by Pipeline
           commitChange: true
