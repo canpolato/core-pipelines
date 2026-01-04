@@ -63,9 +63,9 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Retag image as SIT
         run: |
-          docker pull canpolatoral/${{ github.event.repository.name }}:${{ github.run_number }}
-          docker tag canpolatoral/${{ github.event.repository.name }}:${{ github.run_number }} canpolatoral/${{ github.event.repository.name }}:sit
-          docker push canpolatoral/${{ github.event.repository.name }}:sit
+          docker pull canpolatoral/${{ github.event.repository.name }}:release-${{ github.run_number }}
+          docker tag canpolatoral/${{ github.event.repository.name }}:release-${{ github.run_number }} canpolatoral/${{ github.event.repository.name }}:sit-latest
+          docker push canpolatoral/${{ github.event.repository.name }}:sit-latest
 
   uat-deployment:
     runs-on: ubuntu-latest
@@ -101,9 +101,9 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Retag image as UAT
         run: |
-          docker pull canpolatoral/${{ github.event.repository.name }}:${{ github.run_number }}
-          docker tag canpolatoral/${{ github.event.repository.name }}:${{ github.run_number }} canpolatoral/${{ github.event.repository.name }}:uat
-          docker push canpolatoral/${{ github.event.repository.name }}:uat
+          docker pull canpolatoral/${{ github.event.repository.name }}:release-${{ github.run_number }}
+          docker tag canpolatoral/${{ github.event.repository.name }}:release-${{ github.run_number }} canpolatoral/${{ github.event.repository.name }}:uat-latest
+          docker push canpolatoral/${{ github.event.repository.name }}:uat-latest
 
   cte-deployment:
     runs-on: ubuntu-latest
@@ -139,9 +139,9 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Retag image as UAT
         run: |
-          docker pull canpolatoral/${{ github.event.repository.name }}:${{ github.run_number }}
-          docker tag canpolatoral/${{ github.event.repository.name }}:${{ github.run_number }} canpolatoral/${{ github.event.repository.name }}:uat
-          docker push canpolatoral/${{ github.event.repository.name }}:uat
+          docker pull canpolatoral/${{ github.event.repository.name }}:release-${{ github.run_number }}
+          docker tag canpolatoral/${{ github.event.repository.name }}:release-${{ github.run_number }} canpolatoral/${{ github.event.repository.name }}:cte-latest
+          docker push canpolatoral/${{ github.event.repository.name }}:cte-latest
       
   stg-deployment:
     runs-on: ubuntu-latest
@@ -177,8 +177,8 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Retag image as PT
         run: |
-          docker pull canpolatoral/${{ github.event.repository.name }}:${{ github.run_number }}
-          docker tag canpolatoral/${{ github.event.repository.name }}:${{ github.run_number }} canpolatoral/${{ github.event.repository.name }}:pt
-          docker push canpolatoral/${{ github.event.repository.name }}:pt
+          docker pull canpolatoral/${{ github.event.repository.name }}:release-${{ github.run_number }}
+          docker tag canpolatoral/${{ github.event.repository.name }}:release-${{ github.run_number }} canpolatoral/${{ github.event.repository.name }}:stg-latest
+          docker push canpolatoral/${{ github.event.repository.name }}:stg-latest
       
       
