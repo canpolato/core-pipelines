@@ -35,10 +35,10 @@ jobs:
     environment: sit
     steps:
       - name: Checkout
-        uses: actions/checkout@develop
+        uses: actions/checkout@master
         with:
           repository: ${{ github.repository }}-config
-          ref: refs/heads/main
+          ref: refs/heads/develop
           path: './${{ github.event.repository.name }}-config'
       - name: Update values-sit.yaml
         uses: fjogeleit/yaml-update-action@main
@@ -73,10 +73,10 @@ jobs:
     environment: uat
     steps:
       - name: Checkout
-        uses: actions/checkout@develop
+        uses: actions/checkout@master
         with:
           repository: ${{ github.repository }}-config
-          ref: refs/heads/main
+          ref: refs/heads/develop
           path: './${{ github.event.repository.name }}-config'
       - name: Update values-sit.yaml
         uses: fjogeleit/yaml-update-action@main
@@ -111,10 +111,10 @@ jobs:
     environment: cte
     steps:
       - name: Checkout
-        uses: actions/checkout@develop
+        uses: actions/checkout@master
         with:
           repository: ${{ github.repository }}-config
-          ref: refs/heads/main
+          ref: refs/heads/develop
           path: './${{ github.event.repository.name }}-config'
       - name: Update values-sit.yaml
         uses: fjogeleit/yaml-update-action@main
@@ -152,7 +152,7 @@ jobs:
         uses: actions/checkout@staging
         with:
           repository: ${{ github.repository }}-config
-          ref: refs/heads/main
+          ref: refs/heads/develop
           path: './${{ github.event.repository.name }}-config'
       - name: Update values-sit.yaml
         uses: fjogeleit/yaml-update-action@main
