@@ -38,7 +38,7 @@ jobs:
         uses: actions/checkout@master
         with:
           repository: ${{ github.repository }}-config
-          ref: refs/heads/main
+          ref: main
           path: './${{ github.event.repository.name }}-config'
       - name: Update values-prod.yaml
         uses: fjogeleit/yaml-update-action@main

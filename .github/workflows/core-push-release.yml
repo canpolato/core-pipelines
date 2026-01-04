@@ -38,7 +38,7 @@ jobs:
         uses: actions/checkout@master
         with:
           repository: ${{ github.repository }}-config
-          ref: refs/heads/develop
+          ref: develop
           path: './${{ github.event.repository.name }}-config'
       - name: Update values-sit.yaml
         uses: fjogeleit/yaml-update-action@main
@@ -48,9 +48,9 @@ jobs:
           valueFile: 'helm-charts/${{ github.event.repository.name }}/values-sit.yaml'
           propertyPath: 'image.tag'
           value: release-${{ github.sha }}
-          branch: main
-          masterBranchName: main
-          targetBranch: main
+          branch: develop
+          masterBranchName: develop
+          targetBranch: develop
           token: ${{ secrets.CONFIG_PAT }}
           message: CD Change by Pipeline
           commitChange: true
@@ -76,7 +76,7 @@ jobs:
         uses: actions/checkout@master
         with:
           repository: ${{ github.repository }}-config
-          ref: refs/heads/develop
+          ref: develop
           path: './${{ github.event.repository.name }}-config'
       - name: Update values-sit.yaml
         uses: fjogeleit/yaml-update-action@main
@@ -86,9 +86,9 @@ jobs:
           valueFile: 'helm-charts/${{ github.event.repository.name }}/values-uat.yaml'
           propertyPath: 'image.tag'
           value: release-${{ github.sha }}
-          branch: main
-          masterBranchName: main
-          targetBranch: main
+          branch: develop
+          masterBranchName: develop
+          targetBranch: develop
           token: ${{ secrets.CONFIG_PAT }}
           message: CD Change by Pipeline
           commitChange: true
@@ -114,7 +114,7 @@ jobs:
         uses: actions/checkout@master
         with:
           repository: ${{ github.repository }}-config
-          ref: refs/heads/develop
+          ref: develop
           path: './${{ github.event.repository.name }}-config'
       - name: Update values-sit.yaml
         uses: fjogeleit/yaml-update-action@main
@@ -124,9 +124,9 @@ jobs:
           valueFile: 'helm-charts/${{ github.event.repository.name }}/values-cte.yaml'
           propertyPath: 'image.tag'
           value: release-${{ github.sha }}
-          branch: main
-          masterBranchName: main
-          targetBranch: main
+          branch: develop
+          masterBranchName: develop
+          targetBranch: develop
           token: ${{ secrets.CONFIG_PAT }}
           message: CD Change by Pipeline
           commitChange: true
@@ -152,7 +152,7 @@ jobs:
         uses: actions/checkout@staging
         with:
           repository: ${{ github.repository }}-config
-          ref: refs/heads/develop
+          ref: staging
           path: './${{ github.event.repository.name }}-config'
       - name: Update values-sit.yaml
         uses: fjogeleit/yaml-update-action@main
@@ -162,9 +162,9 @@ jobs:
           valueFile: 'helm-charts/${{ github.event.repository.name }}/values-stg.yaml'
           propertyPath: 'image.tag'
           value: release-${{ github.sha }}
-          branch: main
-          masterBranchName: main
-          targetBranch: main
+          branch: staging
+          masterBranchName: staging
+          targetBranch: staging
           token: ${{ secrets.CONFIG_PAT }}
           message: CD Change by Pipeline
           commitChange: true
