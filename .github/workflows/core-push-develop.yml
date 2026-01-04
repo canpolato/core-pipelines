@@ -80,7 +80,7 @@ jobs:
           valueFile: 'helm-charts/${{ github.event.repository.name }}/values-dev.yaml'
           propertyPath: 'image.tag'
           value: develop-${{ github.sha }}
-          masterBranchName: develop
+          masterBranchName: main
           targetBranch: develop
           branch: develop
           token: ${{ secrets.CONFIG_PAT }}
