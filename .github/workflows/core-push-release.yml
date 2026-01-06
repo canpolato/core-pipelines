@@ -2,6 +2,11 @@ name: Push to Release
 
 on:
   workflow_call:
+    inputs:
+      cr_number:
+        description: CR Number is required for staging deployment
+        required: true
+        type: string
   
 jobs:
 
@@ -148,6 +153,20 @@ jobs:
     needs: cte-deployment
     environment: stg
     steps:
+      - name: Validate CR number
+        run: |
+          cr_number="${{ inputs.cr_number }}"
+          if [[ -z "$cr_number" ]]; then
+            echo "CR number is required."
+            exit 1
+          fi
+          if [[ ! "$cr_number" =~ ^CR-[0-9]+$ ]]; then
+            echo "Invalid CR number format: $cr_number"
+            echo "Expected format: CR-12345"
+            exit 1
+          fi
+          echo "CR number validated: $cr_number"
+        shell: bash
       - name: Checkout
         uses: actions/checkout@staging
         with:
