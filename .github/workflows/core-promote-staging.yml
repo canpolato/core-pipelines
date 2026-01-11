@@ -13,6 +13,19 @@ on:
         type: string
 
 jobs:
+  branch-check:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          if [[ ${{ github.ref_name }} = release*  ]]
+          then
+            echo "${{ github.ref_name }} branch is allowed"
+          else
+            echo "${{ github.ref_name }} branch is not allowed"
+            exit 1
+          fi
+        shell: bash
+
   approve_security:
     runs-on: ubuntu-latest
     environment: stg-approve-security
