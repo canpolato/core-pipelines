@@ -8,7 +8,7 @@ on:
         required: true
         type: string
       release_branch_name:
-        description: "Docker image tag to promote (e.g. release/release-name)"
+        description: "Release branch to promote (e.g. release/release-name)"
         required: true
         type: string
 
@@ -35,7 +35,7 @@ jobs:
   approve_release:
     runs-on: ubuntu-latest
     needs: approve_security
-    environment: stg-approve-release
+    environment: stg-approve-po
     steps:
       - run: echo "Release/Change approval granted."
 
