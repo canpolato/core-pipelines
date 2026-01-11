@@ -28,6 +28,7 @@ jobs:
 
   approve_security:
     runs-on: ubuntu-latest
+    needs: branch-check
     environment: stg-approve-security
     steps:
       - run: echo "Security approval granted."
