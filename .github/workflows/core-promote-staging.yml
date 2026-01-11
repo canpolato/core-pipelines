@@ -13,10 +13,11 @@ on:
         type: string
 
 jobs:
-  branch-check:
+  checks-and-informations:
     runs-on: ubuntu-latest
     steps:
-      - run: |
+      - name: Branch Check
+        run: |
           if [[ ${{ github.ref_name }} = main*  ]]
           then
             echo "${{ github.ref_name }} branch is allowed"
@@ -25,10 +26,16 @@ jobs:
             exit 1
           fi
         shell: bash
+      - name: CR Information
+        run: |
+          echo "🚀 Staging Promotion Request"
+          echo "CR Number: ${{ inputs.cr_number }}"
+          echo "Release Branch Name: ${{ inputs.release_branch_name }}"
+        shell: bash
 
   approve_security:
     runs-on: ubuntu-latest
-    needs: branch-check
+    needs: checks-and-informations
     environment: stg-approve-security
     steps:
       - run: echo "Security approval granted."
