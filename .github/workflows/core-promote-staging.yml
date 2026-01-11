@@ -15,6 +15,8 @@ on:
 jobs:
   checks-and-informations:
     runs-on: ubuntu-latest
+    outputs:
+      safe_tag: ${{ steps.tag.outputs.safe_tag }}
     steps:
       - name: Branch Check
         run: |
@@ -26,6 +28,12 @@ jobs:
             exit 1
           fi
         shell: bash
+      - name: Compute release-name tag
+        id: tag
+        shell: bash
+        run: |
+          SAFE_TAG=$(echo "${inputs.release_branch_name}" | sed 's|^release/|release-name-|')
+          echo "safe_tag=$SAFE_TAG" >> "$GITHUB_OUTPUT"
       - name: Validate CR number
         run: |
           if [ -z "${{ inputs.cr_number }}" ]; then
@@ -53,7 +61,12 @@ jobs:
     needs: approve_security
     environment: stg-approve-po
     steps:
-      - run: echo "PO approval granted."
+      - run: echo "Release/Change approval granted."
+
+  stg-deployment:
+    runs-on: ubuntu-latest
+    needs: [approve_security, approve_po, checks-and-informations]
+    steps:
       - name: Checkout config repo
         uses: actions/checkout@master
         with:
@@ -68,7 +81,8 @@ jobs:
           workDir: '${{ github.event.repository.name }}-config'
           valueFile: 'helm-charts/${{ github.event.repository.name }}/values-stg.yaml'
           propertyPath: 'image.tag'
-          value: ${{ inputs.release_branch_name }}
+          # value: ${{ inputs.release_branch_name }}
+          value: ${{ needs.checks-and-informations.outputs.safe_tag }}
           branch: staging
           masterBranchName: staging
           targetBranch: staging
@@ -84,7 +98,7 @@ jobs:
 
       - name: Retag image as STG
         run: |
-          docker pull canpolatoral/${{ github.event.repository.name }}:${{ inputs.release_branch_name }}
-          docker tag  canpolatoral/${{ github.event.repository.name }}:${{ inputs.release_branch_name }} \
+          docker pull canpolatoral/${{ github.event.repository.name }}:${{ needs.checks-and-informations.outputs.safe_tag }}
+          docker tag  canpolatoral/${{ github.event.repository.name }}:${{ needs.checks-and-informations.outputs.safe_tag }} \
                      canpolatoral/${{ github.event.repository.name }}:stg-latest
           docker push canpolatoral/${{ github.event.repository.name }}:stg-latest
