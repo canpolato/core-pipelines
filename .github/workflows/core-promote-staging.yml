@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          if [[ ${{ github.ref_name }} = release*  ]]
+          if [[ ${{ github.ref_name }} = main*  ]]
           then
             echo "${{ github.ref_name }} branch is allowed"
           else
