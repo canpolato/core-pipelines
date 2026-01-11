@@ -5,8 +5,10 @@ on:
 
 jobs:
 
-  branch-check:
+  branch-pr-cr-check:
     runs-on: ubuntu-latest
+    outputs:
+      safe_tag: ${{ steps.tag.outputs.safe_tag }}
     steps:
       - run: |
           if [[ ${{ github.head_ref }} = release*  ]] || [[ ${{ github.head_ref }} = hotfix* ]]
@@ -16,4 +18,63 @@ jobs:
             echo "${{ github.head_ref }} branch is not allowed"
             exit 1
           fi
+        shell: bash
+      - run: |
+          if [[ ${{ github.event.pull_request.merged }} = true ]]
+          then
+            echo "Merge completed"
+          else
+            echo "Merge is not completed"
+            exit 1
+          fi
+        shell: bash
+
+      - name: Check CR number in PR title/body (required)
+        id: cr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+
+            const title = pr.title || "";
+            const body  = pr.body  || "";
+
+            // Accept either:
+            // - "CR-12345"
+            // - "CR_Number: 12345" (or CR_Number=12345)
+            const patterns = [
+              /\bCR-\d+\b/i,
+              /\bCR[_ -]?Number\s*[:=]\s*\d+\b/i
+            ];
+
+            const text = `${title}\n${body}`;
+            const match = patterns.map(r => text.match(r)).find(Boolean);
+
+            if (!match) {
+              core.setFailed("CR number is missing. Add e.g. 'CR-12345' or 'CR_Number: 12345' to the PR title or description.");
+              return;
+            }
+
+            echo "cr_number=$SAFE_TAG" >> "$GITHUB_OUTPUT"
+
+            // Extract digits for output (optional)
+            const digits = match[0].match(/\d+/)?.[0] || match[0];
+            core.setOutput("cr_number", digits);
+            core.info(`CR check passed: ${match[0]}`);
+
+            CR_NUMBER=${match[0]}
+
+
+      - name: Compute release-name tag
+        id: tag
+        shell: bash
+        run: |
+          SAFE_TAG=$(echo "${{github.head_ref}}" | sed 's|^release/|release-name-|')
+          echo "safe_tag=$SAFE_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: CR Information
+        run: |
+          echo "🚀 Production Promotion Request"
+          echo "CR Number: ${CR_NUMBER}
+          echo "Release Branch Name: ${{ github.head_ref }}"
         shell: bash
