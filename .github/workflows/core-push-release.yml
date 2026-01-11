@@ -2,15 +2,12 @@ name: Push to Release
 
 on:
   workflow_call:
-
-env:
-  SAFE_TAG: ${{ replace(github.ref_name, 'release/', 'release-name-') }}
   
 jobs:
   docker-image-build:
     runs-on: ubuntu-latest
-    env:
-      SAFE_TAG: "" 
+    outputs:
+      safe_tag: ${{ steps.tag.outputs.safe_tag }}
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -21,12 +18,12 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      # - name: Compute release-name tag
-      #   shell: bash
-      #   run: |
-      #     # Example: release/205 → release-name-205
-      #     SAFE_TAG=$(echo "${GITHUB_REF_NAME}" | sed 's|^release/|release-name-|')
-      #     echo "SAFE_TAG=$SAFE_TAG" >> $GITHUB_ENV
+      - name: Compute release-name tag
+        id: tag
+        shell: bash
+        run: |
+          SAFE_TAG=$(echo "${GITHUB_REF_NAME}" | sed 's|^release/|release-name-|')
+          echo "safe_tag=$SAFE_TAG" >> "$GITHUB_OUTPUT"
       # - name: Show GitHub context
       #   env:
       #     GITHUB_CONTEXT: ${{ toJson(github) }}
@@ -41,7 +38,7 @@ jobs:
             canpolatoral/${{ github.event.repository.name }}:release-${{ github.run_number }}
             canpolatoral/${{ github.event.repository.name }}:release-${{ github.sha }}
             canpolatoral/${{ github.event.repository.name }}:release-latest
-            canpolatoral/${{ github.event.repository.name }}:${{ env.SAFE_TAG }}
+            canpolatoral/${{ github.event.repository.name }}:${{ steps.tag.outputs.safe_tag }}
             
   sit-deployment:
     runs-on: ubuntu-latest
@@ -61,8 +58,8 @@ jobs:
           workDir: '${{ github.event.repository.name }}-config'
           valueFile: 'helm-charts/${{ github.event.repository.name }}/values-sit.yaml'
           propertyPath: 'image.tag'
-          value: release-${{ github.sha }}
-          # value: ${{ env.SAFE_TAG }}
+          # value: release-${{ github.sha }}
+          value: ${{ needs.docker-image-build.outputs.safe_tag }}
           branch: develop
           masterBranchName: develop
           targetBranch: develop
@@ -84,7 +81,7 @@ jobs:
 
   uat-deployment:
     runs-on: ubuntu-latest
-    needs: sit-deployment
+    needs: [sit-deployment, docker-image-build]
     environment: uat
     steps:
       - name: Checkout
@@ -100,7 +97,8 @@ jobs:
           workDir: '${{ github.event.repository.name }}-config'
           valueFile: 'helm-charts/${{ github.event.repository.name }}/values-uat.yaml'
           propertyPath: 'image.tag'
-          value: release-${{ github.sha }}
+          # value: release-${{ github.sha }}
+          value: ${{ needs.docker-image-build.outputs.safe_tag }}
           branch: develop
           masterBranchName: develop
           targetBranch: develop
@@ -122,7 +120,7 @@ jobs:
 
   cte-deployment:
     runs-on: ubuntu-latest
-    needs: uat-deployment
+    needs: [uat-deployment, docker-image-build]
     environment: cte
     steps:
       - name: Checkout
@@ -138,7 +136,8 @@ jobs:
           workDir: '${{ github.event.repository.name }}-config'
           valueFile: 'helm-charts/${{ github.event.repository.name }}/values-cte.yaml'
           propertyPath: 'image.tag'
-          value: release-${{ github.sha }}
+          # value: release-${{ github.sha }}
+          value: ${{ needs.docker-image-build.outputs.safe_tag }}
           branch: develop
           masterBranchName: develop
           targetBranch: develop
