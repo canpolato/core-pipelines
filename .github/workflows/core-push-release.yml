@@ -2,9 +2,11 @@ name: Push to Release
 
 on:
   workflow_call:
+
+env:
+  SAFE_TAG: ${{ replace(github.ref_name, 'release/', 'release-name-') }}
   
 jobs:
-
   docker-image-build:
     runs-on: ubuntu-latest
     env:
@@ -19,12 +21,12 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Compute release-name tag
-        shell: bash
-        run: |
-          # Example: release/205 → release-name-205
-          SAFE_TAG=$(echo "${GITHUB_REF_NAME}" | sed 's|^release/|release-name-|')
-          echo "SAFE_TAG=$SAFE_TAG" >> $GITHUB_ENV
+      # - name: Compute release-name tag
+      #   shell: bash
+      #   run: |
+      #     # Example: release/205 → release-name-205
+      #     SAFE_TAG=$(echo "${GITHUB_REF_NAME}" | sed 's|^release/|release-name-|')
+      #     echo "SAFE_TAG=$SAFE_TAG" >> $GITHUB_ENV
       # - name: Show GitHub context
       #   env:
       #     GITHUB_CONTEXT: ${{ toJson(github) }}
@@ -60,6 +62,7 @@ jobs:
           valueFile: 'helm-charts/${{ github.event.repository.name }}/values-sit.yaml'
           propertyPath: 'image.tag'
           value: release-${{ github.sha }}
+          # value: ${{ env.SAFE_TAG }}
           branch: develop
           masterBranchName: develop
           targetBranch: develop
