@@ -32,7 +32,7 @@ jobs:
         id: tag
         shell: bash
         run: |
-          SAFE_TAG=$(echo "${inputs.release_branch_name}" | sed 's|^release/|release-name-|')
+          SAFE_TAG=$(echo "${{inputs.release_branch_name}}" | sed 's|^release/|release-name-|')
           echo "safe_tag=$SAFE_TAG" >> "$GITHUB_OUTPUT"
       - name: Validate CR number
         run: |
