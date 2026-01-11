@@ -7,7 +7,7 @@ on:
         description: "CR Number"
         required: true
         type: string
-      image_tag:
+      release_branch_name:
         description: "Docker image tag to promote (e.g. release/release-name)"
         required: true
         type: string
@@ -66,7 +66,7 @@ jobs:
           workDir: '${{ github.event.repository.name }}-config'
           valueFile: 'helm-charts/${{ github.event.repository.name }}/values-stg.yaml'
           propertyPath: 'image.tag'
-          value: ${{ inputs.image_tag }}
+          value: ${{ inputs.release_branch_name }}
           branch: staging
           masterBranchName: staging
           targetBranch: staging
@@ -82,7 +82,7 @@ jobs:
 
       - name: Retag image as STG
         run: |
-          docker pull canpolatoral/${{ github.event.repository.name }}:${{ inputs.image_tag }}
-          docker tag  canpolatoral/${{ github.event.repository.name }}:${{ inputs.image_tag }} \
+          docker pull canpolatoral/${{ github.event.repository.name }}:${{ inputs.release_branch_name }}
+          docker tag  canpolatoral/${{ github.event.repository.name }}:${{ inputs.release_branch_name }} \
                      canpolatoral/${{ github.event.repository.name }}:stg-latest
           docker push canpolatoral/${{ github.event.repository.name }}:stg-latest
