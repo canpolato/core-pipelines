@@ -7,6 +7,8 @@ jobs:
 
   docker-image-build:
     runs-on: ubuntu-latest
+    env:
+      SAFE_TAG: "" 
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -17,6 +19,12 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Compute release-name tag
+        shell: bash
+        run: |
+          # Example: release/205 → release-name-205
+          SAFE_TAG=$(echo "${GITHUB_REF_NAME}" | sed 's|^release/|release-name-|')
+          echo "SAFE_TAG=$SAFE_TAG" >> $GITHUB_ENV
       # - name: Show GitHub context
       #   env:
       #     GITHUB_CONTEXT: ${{ toJson(github) }}
@@ -31,7 +39,7 @@ jobs:
             canpolatoral/${{ github.event.repository.name }}:release-${{ github.run_number }}
             canpolatoral/${{ github.event.repository.name }}:release-${{ github.sha }}
             canpolatoral/${{ github.event.repository.name }}:release-latest
-            canpolatoral/${{ github.event.repository.name }}:${{ github.ref_name }}
+            canpolatoral/${{ github.event.repository.name }}:${{ env.SAFE_TAG }}
             
   sit-deployment:
     runs-on: ubuntu-latest
