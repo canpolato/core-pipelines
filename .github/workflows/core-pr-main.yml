@@ -44,20 +44,5 @@ jobs:
 
             const digits = match[0].match(/\d+/)?.[0] || match[0];
             core.setOutput("cr_number", digits);
+            core.setOutput("cr_raw", match[0]); // e.g. CR-1234
             core.info(`CR check passed: ${match[0]}`);
-
-
-
-            - name: Compute release-name tag
-              id: tag
-              shell: bash
-              run: |
-                SAFE_TAG=$(echo "${{github.head_ref}}" | sed 's|^release/|release-name-|')
-                echo "safe_tag=$SAFE_TAG" >> "$GITHUB_OUTPUT"
-
-            - name: CR Information
-              run: |
-                echo "🚀 Production Promotion Request"
-                echo "CR Number: ${CR_NUMBER}
-                echo "Release Branch Name: ${{ github.head_ref }}"
-              shell: bash
