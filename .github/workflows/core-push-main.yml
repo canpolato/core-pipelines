@@ -76,6 +76,6 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Retag image as PROD
         run: |
-          docker pull canpolatoral/${{ github.event.repository.name }}:${{ env.PR_LATEST_COMMIT }}
-          docker tag canpolatoral/${{ github.event.repository.name }}:${{ env.PR_LATEST_COMMIT }} canpolatoral/${{ github.event.repository.name }}:prod
+          docker pull canpolatoral/${{ github.event.repository.name }}:${{ needs.checks-and-informations.outputs.safe_tag }}
+          docker tag canpolatoral/${{ github.event.repository.name }}:${{ needs.checks-and-informations.outputs.safe_tag }} canpolatoral/${{ github.event.repository.name }}:prod
           docker push canpolatoral/${{ github.event.repository.name }}:prod
