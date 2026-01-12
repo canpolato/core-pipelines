@@ -60,7 +60,7 @@ jobs:
           valueFile: 'helm-charts/${{ github.event.repository.name }}/values-prod.yaml'
           propertyPath: 'image.tag'
           # value: ${{ env.PR_LATEST_COMMIT }}
-          value: ${{ needs.checks-and-informations.outputs.safe_tag }}
+          value: ${{ needs.branch-pr-check.outputs.safe_tag }}
           branch: main
           masterBranchName: main
           targetBranch: main
@@ -76,6 +76,6 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Retag image as PROD
         run: |
-          docker pull canpolatoral/${{ github.event.repository.name }}:${{ needs.checks-and-informations.outputs.safe_tag }}
-          docker tag canpolatoral/${{ github.event.repository.name }}:${{ needs.checks-and-informations.outputs.safe_tag }} canpolatoral/${{ github.event.repository.name }}:prod
+          docker pull canpolatoral/${{ github.event.repository.name }}:${{ needs.branch-pr-check.outputs.safe_tag }}
+          docker tag canpolatoral/${{ github.event.repository.name }}:${{ needs.branch-pr-check.outputs.safe_tag }} canpolatoral/${{ github.event.repository.name }}:prod
           docker push canpolatoral/${{ github.event.repository.name }}:prod
