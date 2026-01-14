@@ -2,11 +2,16 @@ name: Pull Request to Develop
 
 on:
   workflow_call:
+    inputs:
+      runs-on:
+        required: false
+        type: string
+        default: 'ubuntu-latest'
 
 jobs:
 
   branch-check:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runs-on }} 
     steps:
       - run: |
           if [[ ${{ github.head_ref }} = feature*  ]] || [[ ${{ github.head_ref }} = hotfix* ]]
@@ -20,7 +25,7 @@ jobs:
 
   docker-image-build:
     needs: branch-check
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runs-on }} 
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
