@@ -32,6 +32,7 @@ jobs:
       image: quay.io/buildah/stable:latest
 
     env:
+      IMAGE: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
       TAG: pr-${{ github.sha }}
 
     steps:
@@ -48,7 +49,7 @@ jobs:
           buildah bud \
             --storage-driver=vfs \
             --isolation=chroot \
-            -f ./Containerfile \
+            -f ./Dockerfile \
             -t "${IMAGE}:${TAG}" \
             .
 
