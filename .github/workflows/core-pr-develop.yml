@@ -48,7 +48,7 @@ jobs:
         run: |
           podman build \
             --storage-driver=vfs \
-            -f ./Containerfile \
+            -f ./Dockerfile \
             -t "${IMAGE}:${TAG}" \
             .
 
