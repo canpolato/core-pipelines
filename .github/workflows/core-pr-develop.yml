@@ -21,15 +21,14 @@ jobs:
             echo "${{ github.head_ref }} branch is not allowed"
             exit 1
           fi
-          
 
-  docker-image-build:
-    # needs: branch-check
+  container-image-build-with-podman:
+    needs: branch-check
     runs-on: ${{ inputs.runs-on }}
 
-    # ARC/OpenShift-friendly: run the job in a container that already has buildah
+    # Run job in a container that has podman
     container:
-      image: quay.io/buildah/stable:latest
+      image: quay.io/podman/stable:latest
 
     env:
       IMAGE: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
@@ -38,25 +37,57 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Buildah info (debug)
+      - name: Debug vars
+        shell: sh
         run: |
-          buildah --version
-          id
-          buildah info || true
+          echo "IMAGE=$IMAGE"
+          echo "TAG=$TAG"
+          podman --version || true
 
-      - name: Build image (rootless-friendly on OpenShift)
+      - name: Build (rootless-friendly)
+        shell: sh
         run: |
-          buildah bud \
+          podman build \
             --storage-driver=vfs \
-            --isolation=chroot \
-            -f ./Dockerfile \
+            -f ./Containerfile \
             -t "${IMAGE}:${TAG}" \
             .
 
-      - name: List images
-        run: buildah images
 
-  # docker-image-build:
+  # container-image-build-with-buildah:
+  #   # needs: branch-check
+  #   runs-on: ${{ inputs.runs-on }}
+
+  #   # ARC/OpenShift-friendly: run the job in a container that already has buildah
+  #   container:
+  #     image: quay.io/buildah/stable:latest
+
+  #   env:
+  #     IMAGE: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
+  #     TAG: pr-${{ github.sha }}
+
+  #   steps:
+  #     - uses: actions/checkout@v4
+
+  #     - name: Buildah info (debug)
+  #       run: |
+  #         buildah --version
+  #         id
+  #         buildah info || true
+
+  #     - name: Build image (rootless-friendly on OpenShift)
+  #       run: |
+  #         buildah bud \
+  #           --storage-driver=vfs \
+  #           --isolation=chroot \
+  #           -f ./Dockerfile \
+  #           -t "${IMAGE}:${TAG}" \
+  #           .
+
+  #     - name: List images
+  #       run: buildah images
+
+  # container-image-build-with-docker:
   #   needs: branch-check
   #   runs-on: ${{ inputs.runs-on }} 
   #   steps:
