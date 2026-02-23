@@ -98,7 +98,7 @@ jobs:
 
       - name: Retag image as STG
         run: |
-          docker pull canpolatoral/${{ github.event.repository.name }}:${{ needs.checks-and-informations.outputs.safe_tag }}
-          docker tag  canpolatoral/${{ github.event.repository.name }}:${{ needs.checks-and-informations.outputs.safe_tag }} \
+          docker pull canpolatoral/${{ github.event.repository.name }}:${{ needs.branch-pr-cr-check.outputs.safe_tag }}
+          docker tag  canpolatoral/${{ github.event.repository.name }}:${{ needs.branch-pr-cr-check.outputs.safe_tag }} \
                      canpolatoral/${{ github.event.repository.name }}:stg-latest
           docker push canpolatoral/${{ github.event.repository.name }}:stg-latest
