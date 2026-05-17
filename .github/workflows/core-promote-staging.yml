@@ -16,24 +16,21 @@ jobs:
   branch-pr-cr-check:
     runs-on: ubuntu-latest
     outputs:
-      safe_tag: ${{ steps.tag.outputs.safe_tag }}
+      release_tag: ${{ steps.resolve.outputs.release_tag }}
+      release_sha: ${{ steps.resolve.outputs.release_sha }}
     steps:
       - name: Branch Check
+        shell: bash
+        env:
+          RELEASE_REF: ${{ inputs.release_branch_name }}
         run: |
-          if [[ ${{ github.ref_name }} = main*  ]]
-          then
-            echo "${{ github.ref_name }} branch is allowed"
+          REF="${RELEASE_REF#refs/heads/}"
+          if [[ "$REF" == release/* ]]; then
+            echo "Input branch '$REF' is allowed."
           else
-            echo "${{ github.ref_name }} branch is not allowed"
+            echo "::error::Input branch '$REF' is not allowed. Only release/* branches can be promoted to STG."
             exit 1
           fi
-        shell: bash
-      - name: Compute release-name tag
-        id: tag
-        shell: bash
-        run: |
-          SAFE_TAG=$(echo "${{inputs.release_branch_name}}" | sed 's|^release/|release-name-|')
-          echo "safe_tag=$SAFE_TAG" >> "$GITHUB_OUTPUT"
       - name: Validate CR number
         run: |
           if [ -z "${{ inputs.cr_number }}" ]; then
@@ -42,11 +39,36 @@ jobs:
           fi
           echo "CR=${{ inputs.cr_number }}"
         shell: bash
+      - name: Resolve release branch HEAD SHA
+        id: resolve
+        shell: bash
+        env:
+          RELEASE_REF: ${{ inputs.release_branch_name }}
+          REPO: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          # Strip a leading "refs/heads/" if the operator typed the full ref
+          REF="${RELEASE_REF#refs/heads/}"
+          SHA=$(git ls-remote "https://x-access-token:${GITHUB_TOKEN}@github.com/${REPO}.git" "refs/heads/${REF}" | awk '{print $1}')
+          if [ -z "$SHA" ]; then
+            echo "::error::Branch '${REF}' not found on origin."
+            exit 1
+          fi
+          TAG="release-${SHA}"
+          if ! [[ "$TAG" =~ ^release-[0-9a-f]{7,40}$ ]]; then
+            echo "::error::Resolved tag '${TAG}' is not a valid release-<sha>."
+            exit 1
+          fi
+          echo "release_sha=${SHA}" >> "$GITHUB_OUTPUT"
+          echo "release_tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "Resolved ${REF} -> ${TAG}"
       - name: CR Information
         run: |
-          echo "🚀 Staging Promotion Request"
+          echo "Staging Promotion Request"
           echo "CR Number: ${{ inputs.cr_number }}"
           echo "Release Branch Name: ${{ inputs.release_branch_name }}"
+          echo "Release Branch HEAD SHA: ${{ steps.resolve.outputs.release_sha }}"
+          echo "Image Tag: ${{ steps.resolve.outputs.release_tag }}"
         shell: bash
 
   approve_security:
@@ -66,6 +88,7 @@ jobs:
   stg-deployment:
     runs-on: ubuntu-latest
     needs: [approve_security, approve_po, branch-pr-cr-check]
+    environment: stg
     steps:
       - name: Checkout config repo
         uses: actions/checkout@master
@@ -81,8 +104,7 @@ jobs:
           workDir: '${{ github.event.repository.name }}-config'
           valueFile: 'helm-charts/${{ github.event.repository.name }}/values-stg.yaml'
           propertyPath: 'image.tag'
-          # value: ${{ inputs.release_branch_name }}
-          value: ${{ needs.checks-and-informations.outputs.safe_tag }}
+          value: ${{ needs.branch-pr-cr-check.outputs.release_tag }}
           branch: staging
           masterBranchName: staging
           targetBranch: staging
@@ -98,7 +120,7 @@ jobs:
 
       - name: Retag image as STG
         run: |
-          docker pull canpolatoral/${{ github.event.repository.name }}:${{ needs.branch-pr-cr-check.outputs.safe_tag }}
-          docker tag  canpolatoral/${{ github.event.repository.name }}:${{ needs.branch-pr-cr-check.outputs.safe_tag }} \
+          docker pull canpolatoral/${{ github.event.repository.name }}:${{ needs.branch-pr-cr-check.outputs.release_tag }}
+          docker tag  canpolatoral/${{ github.event.repository.name }}:${{ needs.branch-pr-cr-check.outputs.release_tag }} \
                      canpolatoral/${{ github.event.repository.name }}:stg-latest
           docker push canpolatoral/${{ github.event.repository.name }}:stg-latest

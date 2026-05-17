@@ -6,8 +6,6 @@ on:
 jobs:
   docker-image-build:
     runs-on: ubuntu-latest
-    outputs:
-      safe_tag: ${{ steps.tag.outputs.safe_tag }}
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -18,18 +16,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Compute release-name tag
-        id: tag
-        shell: bash
-        run: |
-          SAFE_TAG=$(echo "${GITHUB_REF_NAME}" | sed 's|^release/|release-name-|')
-          echo "safe_tag=$SAFE_TAG" >> "$GITHUB_OUTPUT"
-      # - name: Show GitHub context
-      #   env:
-      #     GITHUB_CONTEXT: ${{ toJson(github) }}
-      #   run: echo "$GITHUB_CONTEXT"
-      # - name: "Latest Commit Id"
-      #   run: echo ${{ github.sha }}
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
@@ -38,8 +24,7 @@ jobs:
             canpolatoral/${{ github.event.repository.name }}:release-${{ github.run_number }}
             canpolatoral/${{ github.event.repository.name }}:release-${{ github.sha }}
             canpolatoral/${{ github.event.repository.name }}:release-latest
-            canpolatoral/${{ github.event.repository.name }}:${{ steps.tag.outputs.safe_tag }}
-            
+
   sit-deployment:
     runs-on: ubuntu-latest
     needs: docker-image-build
@@ -58,8 +43,7 @@ jobs:
           workDir: '${{ github.event.repository.name }}-config'
           valueFile: 'helm-charts/${{ github.event.repository.name }}/values-sit.yaml'
           propertyPath: 'image.tag'
-          # value: release-${{ github.sha }}
-          value: ${{ needs.docker-image-build.outputs.safe_tag }}
+          value: release-${{ github.sha }}
           branch: develop
           masterBranchName: develop
           targetBranch: develop
@@ -97,8 +81,7 @@ jobs:
           workDir: '${{ github.event.repository.name }}-config'
           valueFile: 'helm-charts/${{ github.event.repository.name }}/values-uat.yaml'
           propertyPath: 'image.tag'
-          # value: release-${{ github.sha }}
-          value: ${{ needs.docker-image-build.outputs.safe_tag }}
+          value: release-${{ github.sha }}
           branch: develop
           masterBranchName: develop
           targetBranch: develop
@@ -136,8 +119,7 @@ jobs:
           workDir: '${{ github.event.repository.name }}-config'
           valueFile: 'helm-charts/${{ github.event.repository.name }}/values-cte.yaml'
           propertyPath: 'image.tag'
-          # value: release-${{ github.sha }}
-          value: ${{ needs.docker-image-build.outputs.safe_tag }}
+          value: release-${{ github.sha }}
           branch: develop
           masterBranchName: develop
           targetBranch: develop

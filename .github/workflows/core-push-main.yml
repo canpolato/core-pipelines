@@ -6,8 +6,6 @@ on:
 jobs:
   branch-pr-check:
     runs-on: ubuntu-latest
-    outputs:
-      safe_tag: ${{ steps.tag.outputs.safe_tag }}
     steps:
       - run: |
           if [[ ${{ github.head_ref }} = release*  ]] || [[ ${{ github.head_ref }} = hotfix* ]]
@@ -28,17 +26,11 @@ jobs:
           fi
         shell: bash
 
-      - name: Compute release-name tag
-        id: tag
-        shell: bash
-        run: |
-          SAFE_TAG=$(echo "${{github.head_ref}}" | sed 's|^release/|release-name-|')
-          echo "safe_tag=$SAFE_TAG" >> "$GITHUB_OUTPUT"
-
       - name: Branch Information
         run: |
-          echo "🚀 Production Promotion Request"
+          echo "Production Promotion Request"
           echo "Release Branch Name: ${{ github.head_ref }}"
+          echo "Release Branch HEAD SHA: ${{ github.event.pull_request.head.sha }}"
         shell: bash
 
   prod-deployment:
@@ -59,8 +51,7 @@ jobs:
           workDir: '${{ github.event.repository.name }}-config'
           valueFile: 'helm-charts/${{ github.event.repository.name }}/values-prod.yaml'
           propertyPath: 'image.tag'
-          # value: ${{ env.PR_LATEST_COMMIT }}
-          value: ${{ needs.branch-pr-check.outputs.safe_tag }}
+          value: release-${{ github.event.pull_request.head.sha }}
           branch: main
           masterBranchName: main
           targetBranch: main
@@ -76,6 +67,6 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Retag image as PROD
         run: |
-          docker pull canpolatoral/${{ github.event.repository.name }}:${{ needs.branch-pr-check.outputs.safe_tag }}
-          docker tag canpolatoral/${{ github.event.repository.name }}:${{ needs.branch-pr-check.outputs.safe_tag }} canpolatoral/${{ github.event.repository.name }}:prod
+          docker pull canpolatoral/${{ github.event.repository.name }}:release-${{ github.event.pull_request.head.sha }}
+          docker tag canpolatoral/${{ github.event.repository.name }}:release-${{ github.event.pull_request.head.sha }} canpolatoral/${{ github.event.repository.name }}:prod
           docker push canpolatoral/${{ github.event.repository.name }}:prod
