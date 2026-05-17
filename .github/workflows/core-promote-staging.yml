@@ -19,6 +19,14 @@ jobs:
       release_tag: ${{ steps.resolve.outputs.release_tag }}
       release_sha: ${{ steps.resolve.outputs.release_sha }}
     steps:
+      - name: Dispatch Source Check
+        shell: bash
+        run: |
+          if [[ "${{ github.ref_name }}" != "main" ]]; then
+            echo "::error::This workflow must be dispatched from the 'main' branch (got: '${{ github.ref_name }}')."
+            exit 1
+          fi
+          echo "Dispatched from main."
       - name: Branch Check
         shell: bash
         env:
@@ -44,7 +52,9 @@ jobs:
         shell: bash
         env:
           RELEASE_REF: ${{ inputs.release_branch_name }}
+          CR_NUMBER: ${{ inputs.cr_number }}
           REPO: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           # Strip a leading "refs/heads/" if the operator typed the full ref
@@ -62,6 +72,20 @@ jobs:
           echo "release_sha=${SHA}" >> "$GITHUB_OUTPUT"
           echo "release_tag=${TAG}" >> "$GITHUB_OUTPUT"
           echo "Resolved ${REF} -> ${TAG}"
+
+          {
+            echo "## Staging Promotion Request"
+            echo ""
+            echo "| Field | Value |"
+            echo "| --- | --- |"
+            echo "| Release branch | \`${REF}\` |"
+            echo "| Release HEAD SHA | \`${SHA}\` |"
+            echo "| Image tag | \`${TAG}\` |"
+            echo "| CR Number | ${CR_NUMBER} |"
+            echo "| Triggered by | @${ACTOR} |"
+            echo ""
+            echo "Approvers: please verify the release branch and CR number above before approving."
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: CR Information
         run: |
           echo "Staging Promotion Request"
