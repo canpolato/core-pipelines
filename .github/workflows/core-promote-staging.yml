@@ -112,7 +112,7 @@ jobs:
   stg-deployment:
     runs-on: ubuntu-latest
     needs: [approve_security, approve_po, branch-pr-cr-check]
-    environment: stg
+    # environment: stg 
     steps:
       - name: Checkout config repo
         uses: actions/checkout@master
